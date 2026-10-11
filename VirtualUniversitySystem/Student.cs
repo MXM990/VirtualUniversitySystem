@@ -8,7 +8,10 @@ namespace VirtualUniversitySystem
         public string Password;
         public string FullName;
         public List<string> RegisteredCourses = new List<string>();
-        public Dictionary<string, int> Grades = new Dictionary<string, int>();
+        public List<string> ExamCourses = new List<string>();
+        public List<string> ExamAnswersList = new List<string>();
+        public List<string> GradeCourses = new List<string>();
+        public List<int> GradeValues = new List<int>();
 
         public Student(string u, string p, string name)
         {

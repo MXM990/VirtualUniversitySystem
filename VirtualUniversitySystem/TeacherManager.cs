@@ -20,11 +20,11 @@ namespace VirtualUniversitySystem
 
                 if (choice == "1")
                 {
-                    SetCourseQuestion(university.AvailableCourses, university.CourseQuestions);
+                    SetCourseQuestion(university.AvailableCourses, university.CourseNames, university.CourseQuestions);
                 }
                 else if (choice == "2")
                 {
-                    ViewEnrolledStudents(university.Students);
+                    ViewEnrolledStudents(university); // or  send only UniversitySystem
                 }
                 else if (choice == "3")
                 {
@@ -40,19 +40,9 @@ namespace VirtualUniversitySystem
             }
         }
 
-        private static void SetCourseQuestion(List<string> availableCourses, Dictionary<string, string> courseQuestions)
+        private static void SetCourseQuestion(List<string> availableCourses, List<string> courseNames, List<string> courseQuestions)
         {
-            if (availableCourses.Count == 0)
-            {
-                Console.WriteLine("No courses available.");
-                return;
-            }
-
-            Console.WriteLine("Available Courses:");
-            for (int i = 0; i < availableCourses.Count; i++)
-            {
-                Console.WriteLine((i + 1) + ". " + availableCourses[i]);
-            }
+            UniversitySystem.CheckAvailbleCours(availableCourses);
 
             Console.Write("Enter course name: ");
             string cName = Console.ReadLine();
@@ -71,7 +61,24 @@ namespace VirtualUniversitySystem
             {
                 Console.Write("Enter question: ");
                 string q = Console.ReadLine();
-                courseQuestions[cName] = q;
+
+                bool updated = false;
+                for (int i = 0; i < courseNames.Count; i++)
+                {
+                    if (courseNames[i] == cName)
+                    {
+                        courseQuestions[i] = q;
+                        updated = true;
+                        break;
+                    }
+                }
+
+                if (!updated)
+                {
+                    courseNames.Add(cName);
+                    courseQuestions.Add(q);
+                }
+
                 Console.WriteLine("Question saved successfully!");
             }
             else
@@ -80,25 +87,30 @@ namespace VirtualUniversitySystem
             }
         }
 
-        private static void ViewEnrolledStudents(List<Student> students)
+        private static void ViewEnrolledStudents(UniversitySystem university)
         {
+            UniversitySystem.CheckAvailbleCours(university.AvailableCourses);
+
             Console.Write("Enter course name to view students: ");
             string cName = Console.ReadLine();
 
             Console.WriteLine("\nStudents enrolled in " + cName + ":");
             bool found = false;
-            for (int i = 0; i < students.Count; i++)
+            for (int i = 0; i < university.Students.Count; i++)
             {
-                for (int j = 0; j < students[i].RegisteredCourses.Count; j++)
+                for (int j = 0; j < university.Students[i].RegisteredCourses.Count; j++)
                 {
-                    if (students[i].RegisteredCourses[j] == cName)
+                    if (university.Students[i].RegisteredCourses[j] == cName)
                     {
-                        Console.WriteLine("- " + students[i].FullName);
+                        Console.WriteLine("- " + university.Students[i].FullName + " (Username: " + university.Students[i].Username + ")");
                         found = true;
                     }
                 }
             }
-            if (!found) Console.WriteLine("No students found.");
+            if (!found)
+            {
+                Console.WriteLine("No students found.");
+            }
         }
 
         private static void SubmitStudentGrade(List<Student> students)
@@ -121,11 +133,60 @@ namespace VirtualUniversitySystem
                 Console.Write("Enter Course Name: ");
                 string cName = Console.ReadLine();
 
-                Console.Write("Enter Grade (0-100): ");
-                int grade = Convert.ToInt32(Console.ReadLine());
+                bool isRegistered = false;
+                for (int i = 0; i < targetStudent.RegisteredCourses.Count; i++)
+                {
+                    if (targetStudent.RegisteredCourses[i] == cName)
+                    {
+                        isRegistered = true;
+                        break;
+                    }
+                }
 
-                targetStudent.Grades[cName] = grade;
-                Console.WriteLine("Grade recorded successfully!");
+                if (isRegistered)
+                {
+                    Console.WriteLine("\n--- Student Exam Details ---");
+                    Console.WriteLine("Student: " + targetStudent.FullName);
+                    Console.WriteLine("Course: " + cName);
+
+                    string studentAnswer = "[No answer submitted yet]";
+                    for (int i = 0; i < targetStudent.ExamCourses.Count; i++)
+                    {
+                        if (targetStudent.ExamCourses[i] == cName)
+                        {
+                            studentAnswer = targetStudent.ExamAnswersList[i];
+                            break;
+                        }
+                    }
+
+                    Console.WriteLine("Student's Answer: " + studentAnswer);
+
+                    Console.Write("\nEnter Grade (0-100): ");
+                    int grade = Convert.ToInt32(Console.ReadLine());
+
+                    bool gradeUpdated = false;
+                    for (int i = 0; i < targetStudent.GradeCourses.Count; i++)
+                    {
+                        if (targetStudent.GradeCourses[i] == cName)
+                        {
+                            targetStudent.GradeValues[i] = grade;
+                            gradeUpdated = true;
+                            break;
+                        }
+                    }
+
+                    if (!gradeUpdated)
+                    {
+                        targetStudent.GradeCourses.Add(cName);
+                        targetStudent.GradeValues.Add(grade);
+                    }
+
+                    Console.WriteLine("Grade recorded successfully!");
+                }
+                else
+                {
+                    Console.WriteLine("Student is not registered in this course.");
+                }
             }
             else
             {

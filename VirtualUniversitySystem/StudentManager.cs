@@ -24,7 +24,7 @@ namespace VirtualUniversitySystem
                 }
                 else if (choice == "2")
                 {
-                    TakeExam(student, university.CourseQuestions);
+                    TakeExam(student,  university.CourseNames, university.CourseQuestions);
                 }
                 else if (choice == "3")
                 {
@@ -42,17 +42,7 @@ namespace VirtualUniversitySystem
 
         private static void RegisterForCourse(Student student, List<string> availableCourses)
         {
-            if (availableCourses.Count == 0)
-            {
-                Console.WriteLine("No courses available to register.");
-                return;
-            }
-
-            Console.WriteLine("Available Courses:");
-            for (int i = 0; i < availableCourses.Count; i++)
-            {
-                Console.WriteLine((i + 1) + ". " + availableCourses[i]);
-            }
+            UniversitySystem.CheckAvailbleCours(availableCourses);
 
             Console.Write("Enter course name to register: ");
             string cName = Console.ReadLine();
@@ -95,36 +85,93 @@ namespace VirtualUniversitySystem
             }
         }
 
-        private static void TakeExam(Student student, Dictionary<string, string> courseQuestions)
+        private static void TakeExam(Student student, List<string> courseNames, List<string> courseQuestions)
         {
-            Console.Write("Enter course name for exam: ");
+            if (student.RegisteredCourses.Count == 0)
+            {
+                Console.WriteLine("You are not registered in any courses yet.");
+                return;
+            }
+
+            Console.WriteLine("Your Registered Courses:");
+            for (int i = 0; i < student.RegisteredCourses.Count; i++)
+            {
+                Console.WriteLine((i + 1) + ". " + student.RegisteredCourses[i]);
+            }
+
+            Console.Write("Enter course name to take exam: ");
             string cName = Console.ReadLine();
 
-            if (courseQuestions.ContainsKey(cName))
+            bool isRegistered = false;
+            for (int i = 0; i < student.RegisteredCourses.Count; i++)
             {
-                Console.WriteLine("\nQuestion: " + courseQuestions[cName]);
-                Console.Write("Your Answer: ");
-                Console.ReadLine();
-                Console.WriteLine("Answer submitted successfully!");
+                if (student.RegisteredCourses[i] == cName)
+                {
+                    isRegistered = true;
+                    break;
+                }
+            }
+
+            if (isRegistered)
+            {
+                string questionText = "";
+                for (int i = 0; i < courseNames.Count; i++)
+                {
+                    if (courseNames[i] == cName)
+                    {
+                        questionText = courseQuestions[i];
+                        break;
+                    }
+                }
+
+                if (questionText != "")
+                {
+                    Console.WriteLine("\nQuestion: " + questionText);
+                    Console.Write("Your Answer: ");
+                    string answer = Console.ReadLine();
+
+                    bool alreadyAnswered = false;
+                    for (int i = 0; i < student.ExamCourses.Count; i++)
+                    {
+                        if (student.ExamCourses[i] == cName)
+                        {
+                            student.ExamAnswersList[i] = answer;
+                            alreadyAnswered = true;
+                            break;
+                        }
+                    }
+
+                    if (!alreadyAnswered)
+                    {
+                        student.ExamCourses.Add(cName);
+                        student.ExamAnswersList.Add(answer);
+                    }
+
+                    Console.WriteLine("Exam submitted successfully!");
+                }
+                else
+                {
+                    Console.WriteLine("No question available for this course yet.");
+                }
             }
             else
             {
-                Console.WriteLine("No question available for this course.");
+                Console.WriteLine("You are not registered in this course.");
             }
         }
 
         private static void ViewGrades(Student student)
         {
             Console.WriteLine("\n--- Your Grades ---");
-            if (student.Grades.Count == 0)
+            if (student.GradeCourses.Count == 0)
             {
                 Console.WriteLine("No grades yet.");
             }
             else
             {
-                foreach (var item in student.Grades)
+                for (int i = 0; i < student.GradeCourses.Count; i++)
                 {
-                    Console.WriteLine("Course: " + item.Key + " | Grade: " + item.Value);
+                    Console.WriteLine("Course: " + student.GradeCourses[i] + " | Grade: " + student.GradeValues[i]);
                 }
             }
         }
